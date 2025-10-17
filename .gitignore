@@ -1,0 +1,41 @@
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+docs/build/
+docs/site/
+Manifest.toml
+
+# Python (for Jupyter notebooks)
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# JetBrains IDEs
+.idea/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.dll
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.local
