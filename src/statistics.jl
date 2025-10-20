@@ -50,7 +50,7 @@ function variance(stats::OnlineStatistics)::Float64
 end
 
 function std_dev(stats::OnlineStatistics)::Float64
-    return sqrt(variance(stats))
+    return stats |> variance |> sqrt
 end
 
 function std_err(stats::OnlineStatistics)::Float64
