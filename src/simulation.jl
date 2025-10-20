@@ -28,24 +28,35 @@ function simulate(
 
     elseif parallel == :threads
         rng = StandardRNG(rng_seed)
-        n_threads = Threads.nthreads()
-        thread_rngs = split_rng(rng, n_threads)
-        thread_stats = [OnlineStatistics() for _ in 1:n_threads]
+        n_chunks = Threads.nthreads()
+        chunk_rngs = split_rng(rng, n_chunks)
 
-        # Use :static scheduler to prevent task migration
-        Threads.@threads :static for i in 1:n_paths
-            thread_idx = mod1(Threads.threadid(), n_threads)
-            path_or_value = generate_path(
-                process,
-                initial_state,
-                config,
-                thread_rngs[thread_idx]
-            )
-            result = functional(path_or_value)
-            update!(thread_stats[thread_idx], result)
+        paths_per_chunk = div(n_paths, n_chunks)
+
+        tasks = map(1:n_chunks) do chunk_id
+            Threads.@spawn begin
+                local_rng = chunk_rngs[chunk_id]
+                local_stats = OnlineStatistics()
+
+                start_idx = (chunk_id - 1) * paths_per_chunk + 1
+                end_idx = chunk_id == n_chunks ? n_paths : chunk_id * paths_per_chunk
+
+                for i in start_idx:end_idx
+                    path_or_value = generate_path(
+                        process,
+                        initial_state,
+                        config,
+                        local_rng
+                    )
+                    result = functional(path_or_value)
+                    update!(local_stats, result)
+                end
+                local_stats
+            end
         end
 
-        combined_stats = aggregate(thread_stats)
+        chunk_stats = fetch.(tasks)
+        combined_stats = aggregate(chunk_stats)
         return finalize(combined_stats)
     else
         error("Invalid parallel option: $parallel. Use :serial or :threads")
