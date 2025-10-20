@@ -19,8 +19,12 @@ function simulate(
         stats = OnlineStatistics()
 
         for rng in rng_list
-            path_or_value = generate_path(process, initial_state, config, rng)
-            result = functional(path_or_value)
+            result = generate_path(
+                process,
+                initial_state,
+                config,
+                rng
+            ) |> functional
             update!(stats, result)
         end
 
@@ -42,13 +46,12 @@ function simulate(
                 end_idx = chunk_id == n_chunks ? n_paths : chunk_id * paths_per_chunk
 
                 for i in start_idx:end_idx
-                    path_or_value = generate_path(
+                    result = generate_path(
                         process,
                         initial_state,
                         config,
                         local_rng
-                    )
-                    result = functional(path_or_value)
+                    ) |> functional
                     update!(local_stats, result)
                 end
                 local_stats
@@ -56,8 +59,7 @@ function simulate(
         end
 
         chunk_stats = fetch.(tasks)
-        combined_stats = aggregate(chunk_stats)
-        return finalize(combined_stats)
+        return chunk_stats |> aggregate |> finalize
     else
         error("Invalid parallel option: $parallel. Use :serial or :threads")
     end
