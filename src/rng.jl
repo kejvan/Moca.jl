@@ -23,15 +23,9 @@ end
 Create n independent RNG streams for parallel execution.
 """
 function split_rng(rng::StandardRNG, n::Int=2)::Vector{StandardRNG}
-    new_rngs = StandardRNG[]
-
-    for _ in 1:n
-        new_seed = rand(rng.rng, 1:typemax(Int))
-        new_rng = StandardRNG(new_seed)
-        push!(new_rngs, new_rng)
+    return map(1:n) do _
+        rand(rng.rng, 1:typemax(Int)) |> StandardRNG
     end
-
-    return new_rngs
 end
 
 """
