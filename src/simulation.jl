@@ -1,7 +1,7 @@
 """
-    simulate(process, functional, n_paths; initial_state=0.0, config, rng_seed=42, parallel=:serial)
+    simulate(process, functional, n_paths; initial_state=0.0, config, rng_seed=42, sampling=StandardSampling(), parallel=:serial)
 
-Run Monte Carlo simulation by generating n_paths trajectories and computing statistics. Supports serial (:serial) and multi-threaded (:threads) execution.
+Run Monte Carlo simulation by generating n_paths trajectories and computing statistics. Supports serial (:serial) and multi-threaded (:threads) execution. Use sampling parameter to specify variance reduction strategy.
 """
 function simulate(
     process::StochasticProcess,
@@ -10,6 +10,7 @@ function simulate(
     initial_state::Float64=0.0,
     config::PathConfig,
     rng_seed::Int=42,
+    sampling::SamplingStrategy=StandardSampling(),
     parallel::Symbol=:serial
 )::MonteCarloEstimate
     if parallel == :serial
@@ -23,7 +24,8 @@ function simulate(
                 process,
                 initial_state,
                 config,
-                rng
+                rng,
+                sampling
             ) |> functional
             update!(stats, result)
         end
@@ -50,7 +52,8 @@ function simulate(
                         process,
                         initial_state,
                         config,
-                        local_rng
+                        local_rng,
+                        sampling
                     ) |> functional
                     update!(local_stats, result)
                 end

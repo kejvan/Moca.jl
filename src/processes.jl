@@ -17,9 +17,8 @@ function step(
     process::WienerProcess,
     current_state::Float64,
     dt::Float64,
-    rng::StandardRNG
+    Z::Float64
 )::Float64
-    Z = rand_normal(rng)
     dX = process.drift * dt + process.volatility * sqrt(dt) * Z
     return current_state + dX
 end
@@ -41,9 +40,8 @@ function step(
     process::GeometricBrownianMotion,
     current_state::Float64,
     dt::Float64,
-    rng::StandardRNG
+    Z::Float64
 )::Float64
-    Z = rand_normal(rng)
     dS = process.drift * current_state * dt + process.volatility * current_state * sqrt(dt) * Z
     return current_state + dS
 end
