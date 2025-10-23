@@ -3,7 +3,7 @@
 
 Configuration for path generation.
 """
-struct PathConfig
+@kwdef struct PathConfig
     n_steps::Int
     dt::Float64
     store_path::Bool  # If false, only terminal value is returned
