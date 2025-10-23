@@ -9,9 +9,9 @@ Brownian motion with drift: dX = drift * dt + volatility * dW
 end
 
 """
-    step(process::WienerProcess, current_state, dt, rng)
+    step(process::WienerProcess, current_state, dt, Z)
 
-Advance process by dt using Euler-Maruyama discretization.
+Advance process by dt using Euler-Maruyama discretization. Z is a standard normal random variable.
 """
 function step(
     process::WienerProcess,
@@ -32,9 +32,9 @@ Geometric Brownian motion: dS = drift * S * dt + volatility * S * dW
 end
 
 """
-    step(process::GeometricBrownianMotion, current_state, dt, rng)
+    step(process::GeometricBrownianMotion, current_state, dt, Z)
 
-Advance process by dt using Euler-Maruyama discretization.
+Advance process by dt using Euler-Maruyama discretization. Z is a standard normal random variable.
 """
 function step(
     process::GeometricBrownianMotion,
