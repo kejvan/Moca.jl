@@ -10,18 +10,19 @@ struct PathConfig
 end
 
 """
-    generate_path(process, initial_state, config, rng, sampling=StandardSampling())
+    generate_path(process, initial_state, config, rng, sampling)
 
-Generate a single trajectory. Returns Vector{Float64} if store_path=true, Float64 otherwise.
-Dispatches to appropriate implementation based on sampling strategy.
+Generate a single trajectory. Dispatches to appropriate implementation based on sampling strategy.
+For StandardSampling: returns Vector{Float64} or Float64.
+For AntitheticSampling: returns Tuple of two paths.
 """
 function generate_path(
     process::StochasticProcess,
     initial_state::Float64,
     config::PathConfig,
-    rng::StandardRNG,
-    sampling::SamplingStrategy=StandardSampling(),
-)::Union{Vector{Float64},Float64}
+    rng::StandardRNG;
+    sampling::SamplingStrategy=StandardSampling()
+)
     return _generate_path(sampling, process, initial_state, config, rng)
 end
 
@@ -51,14 +52,14 @@ function _generate_path(
     end
 end
 
-# Antithetic sampling implementation
+# Antithetic sampling implementation - returns tuple of both paths
 function _generate_path(
     ::AntitheticSampling,
     process::StochasticProcess,
     initial_state::Float64,
     config::PathConfig,
     rng::StandardRNG,
-)::Union{Vector{Float64},Float64}
+)::Tuple{Union{Vector{Float64},Float64},Union{Vector{Float64},Float64}}
     state_A = initial_state
     state_B = initial_state
     if config.store_path
@@ -71,13 +72,13 @@ function _generate_path(
             push!(states_A, state_A)
             push!(states_B, state_B)
         end
-        return (states_A .+ states_B) ./ 2.0
+        return (states_A, states_B)
     else
         for _ = 1:config.n_steps
             Z = rand_normal(rng)
             state_A = step(process, state_A, config.dt, Z)
             state_B = step(process, state_B, config.dt, -Z)
         end
-        return (state_A + state_B) / 2.0
+        return (state_A, state_B)
     end
 end
